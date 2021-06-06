@@ -1,0 +1,51 @@
+---
+- name: Starting prod node
+  hosts: prod
+  become: yes
+  tasks:
+    - name: Ensure jdk is present
+      apt:
+        name: openjdk-8-jdk
+        state: present
+
+    - name: Ensure git is present
+      apt:
+        name: git
+        state: present
+
+    - name: Ensure maven is present
+      apt:
+        name: maven
+        state: present
+
+    - name: Ensure git clonned
+      ansible.builtin.git:
+        repo: https://github.com/boxfuse/boxfuse-sample-java-war-hello.git
+        dest: /home/boxfuse-sample-java-war-hello
+
+    - name: Run mvn package
+      command: chdir=/home/boxfuse-sample-java-war-hello mvn package
+
+    - name: Copy
+      fetch:
+        src: /home/boxfuse-sample-java-war-hello/target/hello-1.0.war
+        dest: /home/home/
+
+- name: Starting web node
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install default-jdk
+      apt:
+        name: default-jdk
+        state: present
+
+    - name: Ensure tomcat is present
+      apt:
+        name: tomcat9
+        state: present
+
+    - name: Copy
+      copy:
+        src: /home/home/217.28.230.253/home/boxfuse-sample-java-war-hello/target/hello-1.0.war
+        dest: /var/lib/tomcat9/webapps/
